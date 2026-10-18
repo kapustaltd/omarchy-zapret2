@@ -63,6 +63,7 @@ Item {
   }
   Process {
     id: telegramLinkProc
+    clearEnvironment: true
     property bool copying: false
     onExited: function(code) {
       if (code !== 0) root.lastError = copying ? root.t("Не удалось скопировать ссылку")
