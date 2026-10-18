@@ -196,6 +196,9 @@ def require_engine():
 def port_free(port):
     try:
         with socket.socket() as s:
+            # Match asyncio.start_server: closed connections in TIME_WAIT
+            # must not prevent restarting the listener on the same port.
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(("127.0.0.1", port))
     except OSError:
         raise Fail("Telegram port %s is already in use" % port)

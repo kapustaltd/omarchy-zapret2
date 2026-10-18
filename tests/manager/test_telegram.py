@@ -6,6 +6,7 @@ import io
 import tarfile
 from pathlib import Path
 import subprocess
+import socket
 import tempfile
 import unittest
 from unittest import mock
@@ -203,3 +204,24 @@ class Telegram(unittest.TestCase):
                 tg.install()
         self.assertEqual(tg.read_json("engine.json", {}), old)
         self.assertEqual(self.unit.read_text(), "previous unit")
+
+    def test_port_probe_allows_recently_closed_connections(self):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 0))
+            port = listener.getsockname()[1]
+            listener.listen()
+            with socket.create_connection(("127.0.0.1", port)) as client:
+                connection, _ = listener.accept()
+                # The server closes first, leaving its endpoint in TIME_WAIT.
+                connection.close()
+                self.assertEqual(client.recv(1), b"")
+        tg.port_free(port)
+
+    def test_port_probe_rejects_a_live_listener(self):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            listener.bind(("127.0.0.1", 0))
+            listener.listen()
+            with self.assertRaisesRegex(zm.Fail, "already in use"):
+                tg.port_free(listener.getsockname()[1])
