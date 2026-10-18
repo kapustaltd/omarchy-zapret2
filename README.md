@@ -21,7 +21,7 @@ App.qml ───────┼─▶ Service.qml ─▶ bin/omarchy-zapret2 �
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/kapustaltd/omarchy-zapret2.git --enable
+omarchy plugin add https://github.com/KRIEZIEYR/omarchy-zapret2.git --enable
 ```
 
 Open **Zapret2** from the launcher (or click the padlock in the bar) and press
